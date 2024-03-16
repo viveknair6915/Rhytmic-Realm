@@ -1,0 +1,28 @@
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+
+::-webkit-scrollbar-thumb {
+  background-color: #5cb85c; /* Change this to your preferred color */
+  border-radius: 6px;
+}
+
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #4cae4c; /* Change this to your preferred color on hover */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Change this to your preferred background color */
+}
+
+
+::-webkit-scrollbar-thumb {
+  background: #888; /* Change this to your preferred handle color */
+}
+
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Change this to your preferred handle color on hover */
+}

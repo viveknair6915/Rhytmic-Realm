@@ -1,0 +1,42 @@
+/* Hero.module.css */
+
+.heading {
+    font-family: futura,"Nunito Sans", sans-serif;
+    font-size: 8vh;
+    color: white;
+    padding-left: 30px;
+    margin-bottom: 30px; 
+    background-color: rgba(0, 0, 0, 0.5);
+    
+  }
+  
+  .heading h1 {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    line-height: 7vw;
+    padding: 0vw 4vw;
+    
+    
+  }
+  .heading h1::selection{
+    color: black;
+    background-color: white;
+  }
+  .herocta{
+    margin: 2vw 8vw;
+    border: 2px white;
+    border-radius: 99px;
+    padding: 10px 35px;
+    color: black;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 22px;
+    cursor: pointer;
+    background-color: #4caf50;
+
+  }
+  .herocta:hover{
+    background-color: #45a049;
+  }
+  .herocta a{
+    color: black;
+  }

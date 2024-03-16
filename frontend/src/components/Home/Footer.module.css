@@ -1,0 +1,27 @@
+/* Footer.module.css */
+
+.footer {
+    background: url('../../assets/coolbg3.gif');
+    background-size: cover;
+    color: white;
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  .contact {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .link {
+    color: white;
+    text-decoration: none;
+  }
+  
+  .copyright {
+    border-top: 1px solid white;
+    padding-top: 1rem;
+  }
+  

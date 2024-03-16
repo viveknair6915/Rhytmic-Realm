@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Hanuman&family=Noto+Sans+SC:wght@600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Poppins:wght@400;800;900&family=Roboto&family=Urbanist&display=swap');
+
+
+
+  /* https://images.unsplash.com/photo-1501612780327-45045538702b?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D */
+body{
+    background-image: url('../../assets/coolbg.gif');
+    font-family: "Nunito Sans", sans-serif;
+    font-optical-sizing: auto;
+    
+}
+
+.logo{
+    height: 50px;
+    width: 50px;
+}
+
+ul{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    
+}
+li{
+    font-size: 19px;
+    list-style: none;
+    margin-right: 30px;
+    color: white;
+    /* text-decoration: underline; */
+    
+}
+.linkel{
+    text-decoration: none;
+    color: white;
+}
+

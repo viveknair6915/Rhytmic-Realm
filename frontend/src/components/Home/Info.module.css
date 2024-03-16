@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+
+.parent{
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+.parent h1::selection{
+    color: black;
+    background-color: white;
+  }
+
+.parent > h1{
+font-family: futura, sans-serif;
+  margin:0;
+  color: white;
+  font-size: 12vh;
+  line-height: 6vw;
+    padding: 2vw 8vw;
+    
+}
+.infocta{
+    margin: 0vw 10vw;
+    border: 2px white;
+    border-radius: 99px;
+    padding: 10px 38px;
+    color: black;
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 22px;
+    cursor: pointer;
+    background-color: #4caf50;
+    
+    
+}
+.infocta:hover{
+  background-color: #45a049;
+}
