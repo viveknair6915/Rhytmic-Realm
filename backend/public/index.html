@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css"
+			integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk="
+			crossorigin="anonymous"
+		/>
+		<link rel="stylesheet" href="css/style.css" />
+		<title>Join Rooms</title>
+	</head>
+	<body>
+		<div class="join-container">
+			<header class="join-header">
+				<h1 class="heading">Rhythmic Realm</h1>
+			</header>
+			<main class="join-main">
+				<form action="chat.html">
+					<div class="form-control">
+						<label for="username">Username</label>
+						<input
+							type="text"
+							name="username"
+							id="username"
+							placeholder="Naruto"
+							
+						/>
+					</div>
+					<!-- <div class="form-control">
+						<label for="username">Email</label>
+						<input
+							type="email"
+							name="email"
+							id="email"
+							placeholder="abc@gmail.com"
+							required
+						/>
+					</div> -->
+					<div class="form-control">
+						<label for="room">Room</label>
+						<select name="room" id="room">
+							<option value="">Select The Singer</option>
+							<option value="Taylor-Swift">Taylor Swift</option>
+							<option value="Harry-Styles">Harry Styles</option>
+							<option value="mitski">mitski</option>
+							<option value="The-Weekend">The-Weekend</option>
+							<option value="OneRepublic">OneRepublic</option>
+							<option value="OneScript">OneScript</option>
+							<option value="CustomRoom">Custom Room</option>
+						</select>
+					</div>
+					<button type="submit" class="btn">Join Chat</button>
+					<button type="submit" class="btn"><a id="cr" href="http://localhost:3003/createroom">Create Room</a></button>
+				</form>
+			</main>
+		</div>
+	</body>
+</html>
