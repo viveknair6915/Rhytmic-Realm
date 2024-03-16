@@ -1,2 +1,37 @@
-# Rhytmic-Realm
-Engineered a cutting-edge website tailored for my university community, seamlessly connecting like-minded individuals with a shared passion for music. This innovative platform facilitates dynamic collaboration and personalized hangouts for real-life friends .
+### Rhythmic Realm
+
+We are using socket.io and redis for making the chat applicaton part work.
+## Features
+
+- Real-time communication using Socket.IO
+- User authentication
+- Browse and play music tracks
+- Private rooms for Friends
+
+## Getting Started
+
+### Prerequisites
+
+Before you begin, ensure you have the following prerequisites installed:
+
+- Node.js
+- npm (Node Package Manager)
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/vanshiz/codejam-v4.git
+
+cd frontend
+npm install
+npm start
+
+cd backend
+npm install
+npn run dev
+
+cd Advanced-Music-Player-React-JS
+npm install
+npm start
