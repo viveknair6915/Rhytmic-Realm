@@ -22,7 +22,7 @@ Before you begin, ensure you have the following prerequisites installed:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/vanshiz/codejam-v4.git
+   https://github.com/viveknair6915/Rhytmic-Realm.git
 
 cd frontend
 npm install
