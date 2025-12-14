@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
+import { FaStepBackward, FaStepForward, FaPlayCircle, FaPauseCircle } from 'react-icons/fa';
 import './App.css';
 
 function App() {
@@ -58,9 +59,11 @@ function App() {
     const room = params.get('room');
 
     // Construct API URL with room filter
+    // Use REACT_APP_BACKEND_URL if set, else default to localhost:3009
+    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3009';
     const apiUrl = room
-      ? `http://localhost:3009/api/songs?room=${encodeURIComponent(room)}`
-      : 'http://localhost:3009/api/songs';
+      ? `${BACKEND_URL}/api/songs?room=${encodeURIComponent(room)}`
+      : `${BACKEND_URL}/api/songs`;
 
     fetch(apiUrl)
       .then(res => res.json())
@@ -159,10 +162,15 @@ function App() {
             <p className='musicTotalLenght'>{musicTotalLength}</p>
           </div>
           <input type="range" name="musicProgressBar" className='musicProgressBar' value={audioProgress} onChange={handleMusicProgressBar} />
+
+
           <div className="musicControlers">
-            <i className='fa-solid fa-backward musicControler' onClick={handlePrevSong}></i>
-            <i className={`fa-solid ${isAudioPlaying ? 'fa-pause-circle' : 'fa-circle-play'} playBtn`} onClick={handleAudioPlay}></i>
-            <i className='fa-solid fa-forward musicControler' onClick={handleNextSong}></i>
+            <FaStepBackward className='musicControler' onClick={handlePrevSong} />
+            {isAudioPlaying ?
+              <FaPauseCircle className='playBtn' onClick={handleAudioPlay} /> :
+              <FaPlayCircle className='playBtn' onClick={handleAudioPlay} />
+            }
+            <FaStepForward className='musicControler' onClick={handleNextSong} />
           </div>
         </div>
 

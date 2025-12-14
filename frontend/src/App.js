@@ -9,6 +9,7 @@ import JoinPage from './components/MusicParty/JoinPage.jsx';
 // import ChatComponent from './components/MusicParty/ChatComponent.jsx'
 import SignUp from './components/Signup/SignUp.jsx';
 import CreateRoom from './components/CreateRoom/CreateRoom.jsx'
+import Chat from './components/Chat/Chat.jsx'
 
 
 function App() {

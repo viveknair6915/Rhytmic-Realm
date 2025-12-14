@@ -22,7 +22,7 @@ const JoinPage = () => {
         <h1 className={styles.heading}>Rhythm Realm</h1>
       </header>
       <main className={styles.joinmain}>
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className="form-control">
             <label htmlFor="username">Username</label>
             <input
@@ -56,7 +56,7 @@ const JoinPage = () => {
             </select>
           </div>
           <button type="submit" className={styles.btn}>
-            <a href="../../../../../backend/server.js">Join Chat</a>
+            Join Chat
           </button>
         </form>
       </main>
