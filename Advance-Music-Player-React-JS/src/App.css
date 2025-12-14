@@ -1,29 +1,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
-:root{
+:root {
     --mainColor: #fff;
-    --mainLightColor: rgba(235,235,235,0.5);
-    --mainDimColor: rgb(228,228,228);
+    --mainLightColor: rgba(235, 235, 235, 0.5);
+    --mainDimColor: rgb(228, 228, 228);
 }
 
-body{
+body {
     margin: 0;
     padding: 0;
     overflow: hidden;
     box-sizing: border-box;
 }
 
-.container{
+.container {
     min-height: 100vh;
     min-width: 100vw;
     display: flex;
     justify-content: center;
     align-items: center;
     color: var(--mainColor);
-    font-family: 'Poppins';   
+    font-family: 'Poppins';
 }
 
-.backgroundVideo{
+.backgroundVideo {
     position: absolute;
     right: 0;
     top: 0;
@@ -34,15 +34,15 @@ body{
     filter: saturate(2.5);
 }
 
-.blackScreen{
+.blackScreen {
     width: 100vw;
     height: 100vh;
     position: absolute;
     pointer-events: none;
-    background-color: rgba(17,17,17,0.2);
+    background-color: rgba(17, 17, 17, 0.2);
 }
 
-.music-Container{
+.music-Container {
     width: 350px;
     padding: 35px 40px;
     display: flex;
@@ -51,26 +51,26 @@ body{
     align-items: center;
     text-align: center;
     border-radius: 36px;
-    box-shadow: 0 0 20px rgba(26,26,26,0.1),
-    0 0 40px rgba(26,26,26,0.1),
-    0 0 80px rgba(26,26,26,0.1);
+    box-shadow: 0 0 20px rgba(26, 26, 26, 0.1),
+        0 0 40px rgba(26, 26, 26, 0.1),
+        0 0 80px rgba(26, 26, 26, 0.1);
     backdrop-filter: blur(15px);
     font-weight: 600;
 }
 
-.musicPlayer{
+.musicPlayer {
     margin: 0;
     margin-bottom: 10px;
     color: var(--mainLightColor);
 }
 
-.music-Head-Name{
+.music-Head-Name {
     margin: 0 auto;
     font-size: 1.5rem;
     text-align: center;
 }
 
-.music-Artist-Name{
+.music-Artist-Name {
     color: var(--mainDimColor);
     margin: 4px 0;
     font-size: 1.2rem;
@@ -78,7 +78,7 @@ body{
 }
 
 
-#songAvatar{
+#songAvatar {
     width: 200px;
     height: 200px;
     border-radius: 50%;
@@ -89,22 +89,25 @@ body{
 }
 
 @keyframes animateAvatar {
-    0%,100%{
+
+    0%,
+    100% {
         transform: scale(1);
     }
-    50%{
+
+    50% {
         transform: scale(1.03);
     }
 }
 
-.musicTimerDiv{
+.musicTimerDiv {
     display: flex;
     justify-content: space-between;
     width: 100%;
     font-weight: 600;
 }
 
-.musicProgressBar{
+.musicProgressBar {
     width: 100%;
     margin-bottom: 16px;
     height: 10px;
@@ -113,7 +116,7 @@ body{
     filter: hue-rotate(20deg);
 }
 
-.playBtn{
+.playBtn {
     font-size: 32px;
     margin: 8px 10px;
     color: var(--mainColor);
@@ -121,13 +124,19 @@ body{
     font-weight: 400;
 }
 
-.musicControler{
+.musicControler {
     cursor: pointer;
     font-size: 28px;
     color: var(--mainColor);
 }
 
-.changeBackBtn{
+.musicControlers {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.changeBackBtn {
     width: 200px;
     height: 15px;
     background-color: #eee;
@@ -145,15 +154,15 @@ body{
     text-align: center;
 }
 
-.changeBackBtn:hover{
+.changeBackBtn:hover {
     height: 30px;
     color: #222;
 }
 
-.objectFitCover{
+.objectFitCover {
     object-fit: cover;
 }
 
-.objectFitContain{
+.objectFitContain {
     object-fit: contain;
 }
