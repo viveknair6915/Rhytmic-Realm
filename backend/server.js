@@ -22,7 +22,11 @@ const io = socketio(server);
 
 // Set static folder
 app.use(express.static(path.join(__dirname, "public")));
-app.use(cors());
+app.use(express.static(path.join(__dirname, "public")));
+app.use(cors({
+  origin: ["http://localhost:3000", "http://localhost:3003", "https://rhytmic-realm.vercel.app", "https://rhytmic-realm-tgx5.vercel.app"],
+  credentials: true
+}));
 app.use(express.json()); // Enable JSON body parsing
 
 const botName = "RythmRealm Bot";

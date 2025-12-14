@@ -10,7 +10,7 @@ const room = params.get('room');
 const socket = io();
 
 // Set Music Player URL (Update this with your Vercel URL in production)
-const MUSIC_PLAYER_URL = 'https://rhythmic-realm-player.vercel.app'; // Replace with your actual Vercel URL or keep localhost for dev if running locally
+const MUSIC_PLAYER_URL = 'https://rhytmic-realm-tgx5.vercel.app'; // Replace with your actual Vercel URL or keep localhost for dev if running locally
 const iframe = document.getElementById('music-player-frame');
 if (iframe) {
   // Check if running on localhost to toggle (optional logic, but for now let's just default to the production one or logic)
@@ -19,7 +19,7 @@ if (iframe) {
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     iframe.src = 'http://localhost:3000/?room=' + room;
   } else {
-    iframe.src = 'https://rhythmic-music-player.vercel.app/?room=' + room; // GENERIC PLACEHOLDER - User must update!
+    iframe.src = 'https://rhytmic-realm-tgx5.vercel.app/?room=' + room; // GENERIC PLACEHOLDER - User must update!
   }
 }
 
