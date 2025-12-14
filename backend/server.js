@@ -72,44 +72,44 @@ const musicData = [
   {
     songName: 'Chasing',
     songArtist: 'NEFFEX',
-    songSrc: 'http://localhost:3000/Assets/songs/Chasing - NEFFEX.mp3',
-    songAvatar: 'http://localhost:3000/Assets/Images/image1.jpg'
+    songSrc: 'https://rhytmic-realm-tgx5.vercel.app/Assets/songs/Chasing - NEFFEX.mp3',
+    songAvatar: 'https://rhytmic-realm-tgx5.vercel.app/Assets/Images/image1.jpg'
   },
   {
     songName: 'AURORA - Runaway',
     songArtist: 'Aurora Aksnes',
-    songSrc: 'http://localhost:3000/Assets/songs/AURORA - Runaway (Lyrics).mp3',
-    songAvatar: 'http://localhost:3000/Assets/Images/image4.jpg'
+    songSrc: 'https://rhytmic-realm-tgx5.vercel.app/Assets/songs/AURORA - Runaway (Lyrics).mp3',
+    songAvatar: 'https://rhytmic-realm-tgx5.vercel.app/Assets/Images/image4.jpg'
   },
   {
     songName: 'Catch Me If I Fall',
     songArtist: 'TEGNENT',
-    songSrc: 'http://localhost:3000/Assets/songs/Catch Me If I Fall - NEFFEX.mp3',
-    songAvatar: 'http://localhost:3000/Assets/Images/image2.jpg'
+    songSrc: 'https://rhytmic-realm-tgx5.vercel.app/Assets/songs/Catch Me If I Fall - NEFFEX.mp3',
+    songAvatar: 'https://rhytmic-realm-tgx5.vercel.app/Assets/Images/image2.jpg'
   },
   {
     songName: 'Inspired (Clean)',
     songArtist: 'NEFFEX',
-    songSrc: 'http://localhost:3000/Assets/songs/Inspired (Clean) - NEFFEX.mp3',
-    songAvatar: 'http://localhost:3000/Assets/Images/image3.jpg'
+    songSrc: 'https://rhytmic-realm-tgx5.vercel.app/Assets/songs/Inspired (Clean) - NEFFEX.mp3',
+    songAvatar: 'https://rhytmic-realm-tgx5.vercel.app/Assets/Images/image3.jpg'
   },
   {
     songName: 'Baby doll [ slowed + reverb ]',
     songArtist: 'Kanika Kapoor',
-    songSrc: 'http://localhost:3000/Assets/songs/Baby doll [ slowed + reverb ] __ meet bros ,Kanika Kapoor __ jr santu.mp3',
-    songAvatar: 'http://localhost:3000/Assets/Images/image5.jpg'
+    songSrc: 'https://rhytmic-realm-tgx5.vercel.app/Assets/songs/Baby doll [ slowed + reverb ] __ meet bros ,Kanika Kapoor __ jr santu.mp3',
+    songAvatar: 'https://rhytmic-realm-tgx5.vercel.app/Assets/Images/image5.jpg'
   },
   {
     songName: 'Soch (Slowed+Reverbed)',
     songArtist: 'Hardy Sandhu',
-    songSrc: 'http://localhost:3000/Assets/songs/SOCH(Slowed+Reverbed) __ Hardy Sandhu.webm',
-    songAvatar: 'http://localhost:3000/Assets/Images/image6.jpg'
+    songSrc: 'https://rhytmic-realm-tgx5.vercel.app/Assets/songs/SOCH(Slowed+Reverbed) __ Hardy Sandhu.webm',
+    songAvatar: 'https://rhytmic-realm-tgx5.vercel.app/Assets/Images/image6.jpg'
   },
   {
     songName: 'Apna Bana Le',
     songArtist: 'Arijit Singh',
-    songSrc: 'http://localhost:3000/Assets/songs/Apna Bana Le - Full Audio _ Bhediya _ Varun Dhawan, Kriti Sanon_ Sachin-Jigar,Arijit Singh,Amitabh B.webm',
-    songAvatar: 'http://localhost:3000/Assets/Images/image7.jpg'
+    songSrc: 'https://rhytmic-realm-tgx5.vercel.app/Assets/songs/Apna Bana Le - Full Audio _ Bhediya _ Varun Dhawan, Kriti Sanon_ Sachin-Jigar,Arijit Singh,Amitabh B.webm',
+    songAvatar: 'https://rhytmic-realm-tgx5.vercel.app/Assets/Images/image7.jpg'
   }
 ];
 

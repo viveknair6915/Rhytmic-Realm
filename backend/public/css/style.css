@@ -109,13 +109,13 @@ a:hover {
 /* Chat Page */
 
 .chat-container {
-	max-width: 90vw;
+	max-width: 98vw;
 	background: #fff;
-	margin: 30px auto;
+	margin: 10px auto;
 	overflow-y: hidden;
-	height: 90vh;
+	height: 95vh;
 	/* Changed min-height to height to control absolute positioning context better */
-	width: 100vw;
+	width: 98vw;
 	background: url(../asset/about4.gif);
 	border: 1px solid black;
 	border-radius: 39px;
