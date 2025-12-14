@@ -1,69 +1,202 @@
-.container {
-    max-width: 30vw;
-    margin: 2vw auto;
-    
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-  }
-  
-  h2 {
-    color: white;
-    font: futura;
-    font-size: 4vw ;
-    margin: 0;
-    background-color: rgba(0, 0, 0, 0.3);
-  }
-  
-  .form label {
-    font-family: futura;
-    display: block;
-    margin-bottom: 8px;
-    color: white;
-    background-color: rgba(0, 0, 0, 0.3);
-  }
-  
-  .form input {
-    width: 90%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-right: 2px;
-    color: black;
-    font-family: futura;
-    font-size: 1vw;
-  }
-  
-  .signupbtn {
-    background-color: #4caf50;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    font-family: futura;
-    font-size: 1vw;
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
 
-    cursor: pointer;
-    margin: 1vw;
-  }
-  
-  button:hover {
-    background-color: #45a049;
-  }
-  
-  .loginbtn {
-    background-color: #3498db;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    font-family: futura;
-    font-size: 1vw;
-    cursor: pointer;
-  }
-  
-  .loginbtn:hover {
-    background-color: #2980b9;
-  }
-  
+.container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Clean gradient background if global bg fails, or use transparency to let global shine through */
+  background: transparent;
+  padding: 20px;
+}
+
+.glassCard {
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  transform: translateY(0);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glassCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.header h2 {
+  font-weight: 600;
+  font-size: 2rem;
+  margin-bottom: 10px;
+  background: linear-gradient(90deg, #00b09b, #96c93d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inputGroup {
+  position: relative;
+  width: 100%;
+}
+
+.icon {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.1rem;
+  transition: color 0.3s ease;
+}
+
+.inputGroup input {
+  width: 100%;
+  padding: 12px 15px 12px 45px;
+  /* Space for icon */
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: 'Outfit', sans-serif;
+}
+
+.inputGroup input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #00b09b;
+  box-shadow: 0 0 10px rgba(0, 176, 155, 0.2);
+}
+
+.inputGroup input:focus+.icon {
+  color: #00b09b;
+}
+
+.submitBtn {
+  background: linear-gradient(90deg, #00b09b, #96c93d);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  font-family: 'Outfit', sans-serif;
+  margin-top: 10px;
+}
+
+.submitBtn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 15px rgba(150, 201, 61, 0.4);
+}
+
+.forgotPass {
+  text-align: right;
+  color: #00b09b;
+  font-size: 0.85rem;
+  text-decoration: none;
+  margin-top: -10px;
+  transition: color 0.3s;
+}
+
+.forgotPass:hover {
+  color: #96c93d;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider span {
+  padding: 0 10px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+}
+
+.googleBtn {
+  background: white;
+  color: #333;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  font-family: 'Outfit', sans-serif;
+}
+
+.googleBtn:hover {
+  background: #f1f1f1;
+  transform: translateY(-2px);
+}
+
+.googleIcon {
+  font-size: 1.2rem;
+}
+
+.footer {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.footer p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  color: #00b09b;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 5px;
+  transition: color 0.3s;
+  font-size: 0.95rem;
+  font-family: 'Outfit', sans-serif;
+  text-decoration: underline;
+}
+
+.toggleBtn:hover {
+  color: #96c93d;
+}

@@ -12,20 +12,29 @@ import CreateRoom from './components/CreateRoom/CreateRoom.jsx'
 
 
 function App() {
- 
+
 
   return (
     <BrowserRouter>
       <Navbar />
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
+
+        <Route path="/" element={
+          <>
+            <div id="home">
+              <Home />
+            </div>
+            <div id="about">
+              <About />
+            </div>
+          </>
+        } />
         <Route path="/profile" element={<Profile />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/musicparty" element={<JoinPage />} />
         <Route path="/createroom" element={<CreateRoom />} />
-      </Routes> 
-    </BrowserRouter>
+      </Routes>
+    </BrowserRouter >
   );
 }
 

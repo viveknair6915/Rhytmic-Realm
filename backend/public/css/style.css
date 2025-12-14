@@ -9,32 +9,37 @@
 }
 
 ::-webkit-scrollbar {
-    width: 12px;
+	width: 12px;
 }
 
 
 ::-webkit-scrollbar-thumb {
-    background-color: #5cb85c; /* Change this to your preferred color */
-    border-radius: 6px;
+	background-color: #5cb85c;
+	/* Change this to your preferred color */
+	border-radius: 6px;
 }
 
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #4cae4c; /* Change this to your preferred color on hover */
+	background-color: #4cae4c;
+	/* Change this to your preferred color on hover */
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1; /* Change this to your preferred background color */
+	background: #f1f1f1;
+	/* Change this to your preferred background color */
 }
 
 
 ::-webkit-scrollbar-thumb {
-    background: #888; /* Change this to your preferred handle color */
+	background: #888;
+	/* Change this to your preferred handle color */
 }
 
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #555; /* Change this to your preferred handle color on hover */
+	background: #555;
+	/* Change this to your preferred handle color on hover */
 }
 
 
@@ -44,9 +49,10 @@
 	padding: 0;
 
 	/* border:2px solid purple; */
-	
+
 }
-*::selection{
+
+*::selection {
 	color: white;
 	background-color: black;
 }
@@ -56,19 +62,19 @@ body {
 	font-size: 16px;
 	background: url(../asset/about2.gif);
 	margin: 20px;
-	
+
 	height: auto;
 	font-weight: 800;
-	display:flex;
-	align-items:center;
-	justify-content:center;
-	font-size:larger;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: larger;
 }
 
-.heading{
+.heading {
 	font-style: futura;
-	color:black;
-	font-weight:900;
+	color: black;
+	font-weight: 900;
 }
 
 ul {
@@ -78,25 +84,28 @@ ul {
 a {
 	text-decoration: none;
 }
-a:hover{
+
+a:hover {
 	text-decoration: underline;
 }
 
 .btn {
 	cursor: pointer;
 	padding: 5px 15px;
-	background:rgba(0, 0, 0, 0.55);
+	background: rgba(0, 0, 0, 0.55);
 	color: var(--dark-color-a);
 	border: 0;
 	font-size: 17px;
-	height:50px;
-	font-weight:800;
+	height: 50px;
+	font-weight: 800;
 	border-radius: 99px;
-	
+
 }
-.leave-btn{
+
+.leave-btn {
 	border-radius: 39px;
 }
+
 /* Chat Page */
 
 .chat-container {
@@ -104,11 +113,45 @@ a:hover{
 	background: #fff;
 	margin: 30px auto;
 	overflow-y: hidden;
-	min-height:90vh;
-	width:100vw;
+	height: 90vh;
+	/* Changed min-height to height to control absolute positioning context better */
+	width: 100vw;
 	background: url(../asset/about4.gif);
 	border: 1px solid black;
 	border-radius: 39px;
+	position: relative;
+	/* Added for absolute positioning context */
+	padding-bottom: 70px;
+	/* Space for the message bar */
+}
+
+/* ... existing styles ... */
+
+.footerdiv {
+	font-size: 16px;
+	padding: 5px;
+	height: 60px;
+	width: 100%;
+	/* Full width of container */
+	/* margin-bottom: 1vh; */
+	/* Removed margin that might interfere */
+	display: flex;
+	align-items: center;
+	/* Center vertically */
+	justify-content: center;
+	/* Center horizontally */
+	/* border: 1px solid black; */
+	/* Removed border for cleaner look */
+	/* border-radius: 39px; */
+	background: rgba(0, 0, 0, 0.8);
+	/* Dark background for visibility */
+	position: absolute;
+	/* Changed from fixed to absolute */
+	bottom: 0;
+	left: 0;
+	border-bottom-left-radius: 39px;
+	border-bottom-right-radius: 39px;
+	z-index: 10;
 }
 
 .chat-header {
@@ -124,26 +167,49 @@ a:hover{
 
 
 .chat-main {
-    display: flex;
-    flex-direction: row;
+	display: flex;
+	flex-direction: row;
 	justify-content: space-evenly;
-    height: 100%;
+	height: calc(100% - 80px);
+	/* Full height minus footer height */
+	overflow: hidden;
+	/* Prevent main overflow */
 }
 
 
 .chat-messages {
-    flex: 2; /* Takes 2 parts of the available space */
+	flex: 2;
+	/* Takes 2 parts of the available space */
 }
 
 .chat-sidebar:last-child {
-    flex: 1; /* Takes 1 part of the available space */
+	display: none;
+	/* Hide the old sidebar selector style if it matches anything else inappropriately, though we removed the class in html */
+}
+
+.music-player-container {
+	flex: 1.5;
+	/* Give it slightly more space */
+	background: #000;
+	border-left: 2px solid #333;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	/* Ensure full height */
+}
+
+.music-player-frame {
+	width: 100%;
+	height: 100%;
+	border: none;
 }
 
 
 .chat-sidebar {
 	flex: 1;
 	/* background: var(--dark-color-b); */
-	
+
 	color: #fff;
 	padding: 20px 20px 60px;
 	overflow-y: hidden;
@@ -164,42 +230,86 @@ a:hover{
 
 .chat-sidebar ul li {
 	padding: 10px 0;
-	
+
 }
-.chat-sidebar img{
+
+.chat-sidebar img {
 	overflow: hidden;
 	object-fit: contain;
-	
+
 }
 
 .chat-messages {
 	padding: 30px;
-	max-height: 2000px;
-	overflow-y: hidden;
+	/* max-height: 2000px; */
+	height: 100%;
+	overflow-y: auto;
 	font-family: futura;
-	font-size: 3vh;
-	border: 1px solid black;
-	
+	font-size: 1.2rem;
+	/* Adjusted size */
+	/* border: 1px solid black; */
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
 }
 
 .chat-messages .message {
-	padding: 10px;
-	margin-bottom: 15px;
-	background-color: rgba(0, 0, 0, 0.5);
-	border-radius: 5px;
-	
+	padding: 12px 20px;
+	margin-bottom: 0;
+	border-radius: 20px;
+	max-width: 70%;
+	width: fit-content;
+	position: relative;
+	word-wrap: break-word;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+	animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.chat-messages .message.current-user {
+	align-self: flex-end;
+	background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+	/* Green/Lime Gradient */
+	border-bottom-right-radius: 5px;
+	color: white;
+}
+
+.chat-messages .message.other-user {
+	align-self: flex-start;
+	background: rgba(255, 255, 255, 0.15);
+	/* Glass effect */
+	backdrop-filter: blur(5px);
+	border-bottom-left-radius: 5px;
+	color: white;
+	border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .chat-messages .message .meta {
-	font-size: 15px;
+	font-size: 0.8rem;
 	font-weight: bold;
-	/* color: var(--dark-color-b); */
-	opacity: 0.7;
-	margin-bottom: 7px;
+	opacity: 0.8;
+	margin-bottom: 5px;
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
 }
 
 .chat-messages .message .meta span {
-	color: pink;
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 0.75rem;
+	font-weight: normal;
 }
 
 
@@ -208,7 +318,7 @@ a:hover{
 	padding: 5px 30px;
 	background-color: rgba(0, 0, 0, 0.5);
 	height: 85%;
-	
+
 }
 
 .chat-form-container form {
@@ -218,41 +328,44 @@ a:hover{
 
 .chat-form-container input[type='text'] {
 	font-size: 16px;
-	padding: 5px;
+	padding: 5px 15px;
 	height: 52px;
-	
+
 	flex: 1;
-	background: url(../asset/about3.gif);
+	/* background: url(../asset/about3.gif); */
+	background: transparent;
 	position: relative;
-	object-fit: contain;
+	/* object-fit: contain; */
 	color: white;
 	font-family: futura;
 	font-size: 3vh;
-	margin-right: 4vh;
-	border: 1px solid black;
+	margin-right: 2vh;
+	border: 1px solid rgba(255, 255, 255, 0.3);
 	border-radius: 39px;
 }
-.footerdiv{
+
+.footerdiv {
 	font-size: 16px;
-	padding: 5px;
-	height: 60px;
-	width: 80%;
-	margin-bottom: 1vh;
-	flex: 1;
+	padding: 10px 20px;
+	height: 80px;
+	width: 100%;
 	display: flex;
-	align-items: flex-end;
-	border: 1px solid black;
-	border-radius: 39px;
-	justify-content: flex-end;
-	background: url(../asset/about3.gif);
-	position: fixed;
-	object-fit: contain;
-	color: white;
-	font-family: futura;
-	font-size: 3vh;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.85);
+	/* Darker background */
+	backdrop-filter: blur(10px);
+	position: absolute;
+	/* Absolute within chat-container */
 	bottom: 0;
+	left: 0;
+	border-bottom-left-radius: 39px;
+	border-bottom-right-radius: 39px;
+	z-index: 100;
+	box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
 }
-.footerdiv input{
+
+.footerdiv input {
 	margin-top: 1%;
 	height: 100%;
 	/* background: url(../asset/about3.gif); */
@@ -264,7 +377,7 @@ a:hover{
 /* Join Page */
 .join-container {
 	max-width: 1200px;
-	width:80%;
+	width: 80%;
 	margin: 80px auto;
 	color: #fff;
 	background: url(../asset/about4.gif);
@@ -273,24 +386,25 @@ a:hover{
 }
 
 .join-header {
-	
+
 	font-size: 7vh;
 	text-align: center;
 	padding: 20px;
-	
+
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
 }
+
 .heading {
-    font-family: futura;
-    color: white;
-    font-size: 7vh;
-    text-shadow: 1px 1px 1px black;
+	font-family: futura;
+	color: white;
+	font-size: 7vh;
+	text-shadow: 1px 1px 1px black;
 }
 
 .join-main {
 	padding: 30px 40px;
-	
+
 }
 
 .join-main p {
@@ -302,7 +416,7 @@ a:hover{
 }
 
 .join-main label {
-	font-family: futura ;
+	font-family: futura;
 	font-size: 3vh;
 	display: block;
 	margin-bottom: 5px;
@@ -317,7 +431,7 @@ a:hover{
 	border-radius: 99px;
 	font-family: futura;
 	text-align: center;
-	
+
 }
 
 .join-main select {
@@ -330,29 +444,31 @@ a:hover{
 	color: gray;
 	text-align: center;
 	font-family: futura;
-	
+
 }
 
 .join-main .btn {
-    margin-top: 20px;
-    width: 100%;
-    color: white;
-    font-family: futura;
-    font-size: 3vh;
-    border-radius: 99px;
-    transition: transform 0.1s ;
-	text-shadow: 1px 1px 1px black; /* Adding a smooth transition for the zoom effect */
+	margin-top: 20px;
+	width: 100%;
+	color: white;
+	font-family: futura;
+	font-size: 3vh;
+	border-radius: 99px;
+	transition: transform 0.1s;
+	text-shadow: 1px 1px 1px black;
+	/* Adding a smooth transition for the zoom effect */
 }
 
 .join-main .btn:hover {
-    margin-top: 20px;
-    width: 100%;
-    color: white;
-    font-family: futura;
-    font-size: 3vh;
-    border-radius: 99px;
-    background-color: rgba(0, 0, 0, 0.6);
-    transform: scale(1.01); /* Zoom effect on hover */
+	margin-top: 20px;
+	width: 100%;
+	color: white;
+	font-family: futura;
+	font-size: 3vh;
+	border-radius: 99px;
+	background-color: rgba(0, 0, 0, 0.6);
+	transform: scale(1.01);
+	/* Zoom effect on hover */
 }
 
 
@@ -367,39 +483,40 @@ a:hover{
 	}
 }
 
-.text{
-	color:white;
+.text {
+	color: white;
 }
 
-.btn-chat{
-	background-color:#000000;
-	height:50px;
-	padding-top:10px;
-	padding-left:25px;
-	width:150px;
-	cursor:pointer;
+.btn-chat {
+	background-color: #000000;
+	height: 50px;
+	padding-top: 10px;
+	padding-left: 25px;
+	width: 150px;
+	cursor: pointer;
 }
 
-input{
-	height:30px;
-	width:100%;
+input {
+	height: 30px;
+	width: 100%;
 
 }
 
-.btn-chat-send{
-	height:52px;
-	
-	width:100px;
+.btn-chat-send {
+	height: 52px;
 
-	color:white;
+	width: 100px;
+
+	color: white;
 
 	background-color: #000000;
 	border-radius: 39px;
 }
 
-.chat-form-container input{
-	height:30px;
+.chat-form-container input {
+	height: 30px;
 }
-#cr{
+
+#cr {
 	color: white;
 }

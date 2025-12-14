@@ -17,21 +17,29 @@ export function Navbar() {
     });
   }, []);
 
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div>
       <nav>
         <div className={styles.nav}>
           <ul className='navlist'>
-            <div>
-              <li>Rhythmic Realm </li>
-            </div>
-            <li><Link className={styles.linkel} to="/">Home</Link></li>
-            <li><Link className={styles.linkel} to="/about">About</Link></li>
+            <li className={styles.brand}>
+              <Link to="/" onClick={() => scrollToSection('home')} className={styles.linkel} style={{ fontSize: '1.5em', fontWeight: 'bold' }}>Rhythmic Realm</Link>
+            </li>
+            <li>
+              {/* Check if we are on home page to scroll, else link to home with hash (simple Link works with hash usually but let's be explicit) */}
+              <Link className={styles.linkel} to="/" onClick={() => setTimeout(() => scrollToSection('about'), 100)}>About</Link>
+            </li>
+            <li><Link to="http://localhost:3009/" className={styles.linkel}><FaMusic /> Music Party</Link></li>
+            <li><Link to="http://localhost:3000/" className={styles.linkel} target="_blank"><FaMusic /> Music Player</Link></li>
             <li><Link className={styles.linkel} to="/signup">Sign Up</Link></li>
-            <li><Link to="http://localhost:3009/" className={styles.linkel}><FaMusic />Music Party</Link></li>
-            <li><Link to="/profile" className={styles.linkel}><FaUserCircle style={{ fontSize: '2em' }} /></Link></li>
-            <div>
-            </div>
+            <li><Link to="/profile" className={styles.linkel}><FaUserCircle style={{ fontSize: '1.8em' }} /></Link></li>
           </ul>
         </div>
       </nav>
