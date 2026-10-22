@@ -16,6 +16,7 @@ const {
 const { verifySocketToken } = require("./middleware/auth");
 const Room = require("./models/Room");
 const Message = require("./models/Message");
+const { memoryMessages } = require("./models/memoryStore");
 
 // Routers
 const authRouter = require("./routes/auth");
@@ -56,6 +57,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/rhytmic_realm";
+
+mongoose.set('bufferCommands', false);
 
 mongoose.connect(MONGODB_URI)
   .then(() => console.log(` Connected to MongoDB at ${MONGODB_URI}`))
@@ -295,18 +298,35 @@ io.on("connection", (socket) => {
 
     const formatted = formatMessage(user.username, cleanText);
 
-    // Save message to MongoDB
+    // Save message to MongoDB or fallback in-memory store
     try {
-      const newMsg = new Message({
+      if (mongoose.connection.readyState === 1) {
+        const newMsg = new Message({
+          room: user.room,
+          sender: socket.user ? (socket.user._id || socket.user.id) : null,
+          username: user.username,
+          text: cleanText,
+          time: formatted.time
+        });
+        await newMsg.save();
+      } else {
+        memoryMessages.push({
+          room: user.room,
+          username: user.username,
+          text: cleanText,
+          time: formatted.time,
+          createdAt: new Date()
+        });
+      }
+    } catch (err) {
+      console.warn("Failed to persist message to MongoDB, saving in memory:", err.message);
+      memoryMessages.push({
         room: user.room,
-        sender: socket.user ? socket.user._id : null,
         username: user.username,
         text: cleanText,
-        time: formatted.time
+        time: formatted.time,
+        createdAt: new Date()
       });
-      await newMsg.save();
-    } catch (err) {
-      console.warn("Failed to persist message to MongoDB:", err.message);
     }
 
     // Broadcast to room

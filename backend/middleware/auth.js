@@ -1,7 +1,24 @@
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('../models/User');
+const { memoryUsers } = require('../models/memoryStore');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'rhytmic-realm-secret-key-2026';
+
+const findUserById = async (id) => {
+  if (mongoose.connection.readyState === 1) {
+    try {
+      const user = await User.findById(id).select('-password');
+      if (user) return user;
+    } catch (_) {}
+  }
+  const memUser = memoryUsers.find(u => String(u._id) === String(id) || String(u.id) === String(id));
+  if (memUser) {
+    const { password, ...safe } = memUser;
+    return safe;
+  }
+  return null;
+};
 
 // Middleware for Express REST endpoints
 const authenticateToken = async (req, res, next) => {
@@ -20,7 +37,7 @@ const authenticateToken = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.id).select('-password');
+    const user = await findUserById(decoded.id);
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid token: User no longer exists.' });
@@ -50,7 +67,7 @@ const optionalAuth = async (req, res, next) => {
 
     if (token) {
       const decoded = jwt.verify(token, JWT_SECRET);
-      const user = await User.findById(decoded.id).select('-password');
+      const user = await findUserById(decoded.id);
       if (user) req.user = user;
     }
   } catch (_) {
@@ -64,7 +81,7 @@ const verifySocketToken = async (token) => {
   if (!token) return null;
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.id).select('-password');
+    const user = await findUserById(decoded.id);
     return user || null;
   } catch (_) {
     return null;

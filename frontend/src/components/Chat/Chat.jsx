@@ -142,7 +142,11 @@ const Chat = () => {
     };
 
     // Construct Music Player URL
-    const MUSIC_PLAYER_BASE_URL = process.env.REACT_APP_MUSIC_PLAYER_URL || 'http://localhost:3000';
+    const MUSIC_PLAYER_BASE_URL =
+        process.env.REACT_APP_MUSIC_PLAYER_URL ||
+        (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:3000'
+            : 'https://rhytmic-realm-tgx5.vercel.app');
     const musicPlayerUrl = `${MUSIC_PLAYER_BASE_URL}/?room=${encodeURIComponent(room)}`;
 
     if (!ready) return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Connecting to Realm...</div>;

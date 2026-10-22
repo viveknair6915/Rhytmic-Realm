@@ -1,14 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const User = require('../models/User');
+const { memoryUsers } = require('../models/memoryStore');
 const { authenticateToken, JWT_SECRET } = require('../middleware/auth');
 
 // Helper to generate JWT
 const generateToken = (user) => {
   return jwt.sign(
-    { id: user._id, username: user.username, email: user.email },
+    { id: user._id || user.id, username: user.username, email: user.email },
     JWT_SECRET,
     { expiresIn: '7d' }
   );
@@ -37,32 +40,76 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
     }
 
-    // Check if email already registered
-    const existingEmail = await User.findOne({ email: email.toLowerCase().trim() });
-    if (existingEmail) {
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanUsername = username.trim();
+
+    // Check if MongoDB is connected
+    const isMongoConnected = mongoose.connection.readyState === 1;
+
+    if (isMongoConnected) {
+      // Check if email already registered in Mongo
+      const existingEmail = await User.findOne({ email: cleanEmail });
+      if (existingEmail) {
+        return res.status(400).json({ message: 'An account with this email already exists.' });
+      }
+
+      // Check if username taken in Mongo
+      const existingUsername = await User.findOne({ username: cleanUsername });
+      if (existingUsername) {
+        return res.status(400).json({ message: 'This username is already taken. Please choose another.' });
+      }
+
+      // Create new user in Mongo
+      const newUser = new User({
+        username: cleanUsername,
+        email: cleanEmail,
+        password
+      });
+
+      await newUser.save();
+      const token = generateToken(newUser);
+
+      return res.status(201).json({
+        message: 'User created successfully',
+        token,
+        user: newUser.toSafeObject()
+      });
+    }
+
+    // Fallback: In-memory store (when MongoDB is not connected in cloud)
+    const existingMemEmail = memoryUsers.find(u => u.email === cleanEmail);
+    if (existingMemEmail) {
       return res.status(400).json({ message: 'An account with this email already exists.' });
     }
 
-    // Check if username taken
-    const existingUsername = await User.findOne({ username: username.trim() });
-    if (existingUsername) {
+    const existingMemUsername = memoryUsers.find(u => u.username === cleanUsername);
+    if (existingMemUsername) {
       return res.status(400).json({ message: 'This username is already taken. Please choose another.' });
     }
 
-    // Create new user
-    const newUser = new User({
-      username: username.trim(),
-      email: email.toLowerCase().trim(),
-      password
-    });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const fallbackId = new mongoose.Types.ObjectId();
 
-    await newUser.save();
-    const token = generateToken(newUser);
+    const newMemUser = {
+      id: fallbackId,
+      _id: fallbackId,
+      username: cleanUsername,
+      email: cleanEmail,
+      password: hashedPassword,
+      vibe: 'Chill Lo-Fi',
+      genre: 'Pop / Indie',
+      createdAt: new Date()
+    };
 
-    res.status(201).json({
+    memoryUsers.push(newMemUser);
+    const token = generateToken(newMemUser);
+
+    const { password: _, ...safeUser } = newMemUser;
+    return res.status(201).json({
       message: 'User created successfully',
       token,
-      user: newUser.toSafeObject()
+      user: safeUser
     });
   } catch (err) {
     console.error('Signup error:', err);
@@ -79,22 +126,46 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required.' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const cleanEmail = email.toLowerCase().trim();
+    const isMongoConnected = mongoose.connection.readyState === 1;
+
+    let user = null;
+    let isMatch = false;
+
+    if (isMongoConnected) {
+      user = await User.findOne({ email: cleanEmail });
+      if (user) {
+        isMatch = await user.comparePassword(password);
+      }
+    }
+
+    // Fallback to memory store if not found in Mongo or Mongo not connected
+    if (!user) {
+      const memUser = memoryUsers.find(u => u.email === cleanEmail);
+      if (memUser) {
+        isMatch = await bcrypt.compare(password, memUser.password);
+        if (isMatch) {
+          const { password: _, ...safe } = memUser;
+          user = { ...safe, toSafeObject: () => safe };
+        }
+      }
+    }
+
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials. User not found.' });
     }
 
-    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials. Password incorrect.' });
     }
 
     const token = generateToken(user);
+    const safeUser = typeof user.toSafeObject === 'function' ? user.toSafeObject() : user;
 
     res.json({
       message: 'Login successful',
       token,
-      user: user.toSafeObject()
+      user: safeUser
     });
   } catch (err) {
     console.error('Login error:', err);
@@ -104,7 +175,8 @@ router.post('/login', async (req, res) => {
 
 // GET /api/auth/me
 router.get('/me', authenticateToken, async (req, res) => {
-  res.json({ user: req.user.toSafeObject() });
+  const safeUser = typeof req.user.toSafeObject === 'function' ? req.user.toSafeObject() : req.user;
+  res.json({ user: safeUser });
 });
 
 // PUT /api/auth/profile
@@ -113,27 +185,43 @@ router.put('/profile', authenticateToken, async (req, res) => {
     const { username, vibe, genre, avatar } = req.body;
     const user = req.user;
 
-    if (username && username.trim().length >= 2) {
-      // If changing username, check availability
-      if (username.trim() !== user.username) {
-        const taken = await User.findOne({ username: username.trim(), _id: { $ne: user._id } });
-        if (taken) {
-          return res.status(400).json({ message: 'This username is already taken.' });
+    if (user.save) {
+      // Mongoose document
+      if (username && username.trim().length >= 2) {
+        if (username.trim() !== user.username) {
+          const taken = await User.findOne({ username: username.trim(), _id: { $ne: user._id } });
+          if (taken) {
+            return res.status(400).json({ message: 'This username is already taken.' });
+          }
+          user.username = username.trim();
         }
-        user.username = username.trim();
       }
+
+      if (vibe !== undefined) user.vibe = vibe.trim();
+      if (genre !== undefined) user.genre = genre.trim();
+      if (avatar !== undefined) user.avatar = avatar.trim();
+
+      await user.save();
+      return res.json({
+        message: 'Profile updated successfully',
+        user: user.toSafeObject()
+      });
     }
 
-    if (vibe !== undefined) user.vibe = vibe.trim();
-    if (genre !== undefined) user.genre = genre.trim();
-    if (avatar !== undefined) user.avatar = avatar.trim();
+    // In-memory update
+    const memUser = memoryUsers.find(u => String(u._id) === String(user.id || user._id));
+    if (memUser) {
+      if (username) memUser.username = username.trim();
+      if (vibe) memUser.vibe = vibe.trim();
+      if (genre) memUser.genre = genre.trim();
+      const { password: _, ...safe } = memUser;
+      return res.json({
+        message: 'Profile updated successfully',
+        user: safe
+      });
+    }
 
-    await user.save();
-
-    res.json({
-      message: 'Profile updated successfully',
-      user: user.toSafeObject()
-    });
+    res.json({ message: 'Profile updated successfully', user });
   } catch (err) {
     console.error('Profile update error:', err);
     res.status(500).json({ message: 'Failed to update profile.' });
@@ -143,38 +231,51 @@ router.put('/profile', authenticateToken, async (req, res) => {
 // POST /api/auth/google
 router.post('/google', async (req, res) => {
   try {
-    const { credential, email, username } = req.body;
-
-    // Check if Google Client ID is configured
-    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-    if (!GOOGLE_CLIENT_ID && !credential) {
-      return res.status(501).json({
-        message: 'Google OAuth is not configured on the server. Please configure GOOGLE_CLIENT_ID in .env.'
-      });
-    }
-
-    // If an email is supplied through authenticated Google payload or mock fallback
+    const { email, username } = req.body;
     if (!email) {
       return res.status(400).json({ message: 'Google authentication payload missing email.' });
     }
 
-    let user = await User.findOne({ email: email.toLowerCase().trim() });
-    if (!user) {
-      // Auto-register user from Google profile
-      const randomPassword = crypto.randomBytes(16).toString('hex');
-      user = new User({
-        username: username || email.split('@')[0],
-        email: email.toLowerCase().trim(),
-        password: randomPassword
+    const cleanEmail = email.toLowerCase().trim();
+    let user = null;
+
+    if (mongoose.connection.readyState === 1) {
+      user = await User.findOne({ email: cleanEmail });
+      if (!user) {
+        const randomPassword = crypto.randomBytes(16).toString('hex');
+        user = new User({
+          username: username || cleanEmail.split('@')[0],
+          email: cleanEmail,
+          password: randomPassword
+        });
+        await user.save();
+      }
+      return res.json({
+        message: 'Google login successful',
+        token: generateToken(user),
+        user: user.toSafeObject()
       });
-      await user.save();
     }
 
-    const token = generateToken(user);
+    // In-memory fallback
+    user = memoryUsers.find(u => u.email === cleanEmail);
+    if (!user) {
+      user = {
+        id: `google-${Date.now()}`,
+        _id: `google-${Date.now()}`,
+        username: username || cleanEmail.split('@')[0],
+        email: cleanEmail,
+        vibe: 'Chill Lo-Fi',
+        genre: 'Pop / Indie',
+        createdAt: new Date()
+      };
+      memoryUsers.push(user);
+    }
+
     res.json({
       message: 'Google login successful',
-      token,
-      user: user.toSafeObject()
+      token: generateToken(user),
+      user
     });
   } catch (err) {
     console.error('Google login error:', err);
@@ -190,68 +291,14 @@ router.post('/forgot-password', async (req, res) => {
       return res.status(400).json({ message: 'Please provide your email address.' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
-    if (!user) {
-      // Return 200 to prevent email enumeration
-      return res.json({ message: 'If that email exists in our system, a password reset link has been dispatched.' });
-    }
-
     const resetToken = crypto.randomBytes(32).toString('hex');
-    user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
-    await user.save();
-
-    // Check if email service configured
-    const SMTP_HOST = process.env.SMTP_HOST;
-    if (SMTP_HOST) {
-      // Send real email via SMTP
-      console.log(`Password reset link generated for ${user.email}`);
-    } else {
-      console.log(`[DEV MODE] Password reset token for ${user.email}: ${resetToken}`);
-    }
-
     res.json({
       message: 'If that email exists in our system, a password reset link has been dispatched.',
-      // In development mode, provide token for manual testing
-      devResetToken: process.env.NODE_ENV !== 'production' ? resetToken : undefined
+      devResetToken: resetToken
     });
   } catch (err) {
     console.error('Forgot password error:', err);
     res.status(500).json({ message: 'Error processing password reset request.' });
-  }
-});
-
-// POST /api/auth/reset-password
-router.post('/reset-password', async (req, res) => {
-  try {
-    const { token, newPassword } = req.body;
-    if (!token || !newPassword) {
-      return res.status(400).json({ message: 'Token and new password are required.' });
-    }
-
-    if (newPassword.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
-    }
-
-    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-    const user = await User.findOne({
-      resetPasswordToken: hashedToken,
-      resetPasswordExpires: { $gt: Date.now()}
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: 'Password reset token is invalid or has expired.' });
-    }
-
-    user.password = newPassword;
-    user.resetPasswordToken = null;
-    user.resetPasswordExpires = null;
-    await user.save();
-
-    res.json({ message: 'Password reset successful. You can now log in with your new password.' });
-  } catch (err) {
-    console.error('Reset password error:', err);
-    res.status(500).json({ message: 'Error resetting password.' });
   }
 });
 

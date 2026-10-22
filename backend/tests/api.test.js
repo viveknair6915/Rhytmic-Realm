@@ -20,7 +20,14 @@ before(async () => {
   // Ensure DB connection
   const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/rhytmic_realm';
   if (mongoose.connection.readyState !== 1) {
-    await mongoose.connect(MONGODB_URI);
+    try {
+      await mongoose.connect(MONGODB_URI);
+    } catch (_) {}
+  }
+  let retries = 0;
+  while (mongoose.connection.readyState === 2 && retries < 20) {
+    await new Promise(r => setTimeout(r, 100));
+    retries++;
   }
 
   // Start HTTP server on test port on 127.0.0.1

@@ -39,7 +39,12 @@ export function Navbar() {
             </li>
             <li>
               <a
-                href={process.env.REACT_APP_MUSIC_PLAYER_URL || "http://localhost:3000"}
+                href={
+                  process.env.REACT_APP_MUSIC_PLAYER_URL ||
+                  (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                    ? 'http://localhost:3000'
+                    : 'https://rhytmic-realm-tgx5.vercel.app')
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.linkel}
