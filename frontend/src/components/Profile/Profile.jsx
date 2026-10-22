@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { FaUserAstronaut, FaMusic, FaSignOutAlt, FaEdit, FaCheck, FaTimes } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
 import styles from './Profile.module.css';
 
 function Profile() {
-    const navigate = useNavigate();
     const [user, setUser] = useState({
         username: 'Guest User',
         email: 'guest@rhythmicrealm.com',
