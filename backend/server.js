@@ -2,72 +2,104 @@ const path = require("path");
 const http = require("http");
 const express = require("express");
 const socketio = require("socket.io");
-const formatMessage = require("./utils/messages");
 const cors = require("cors");
-
-const createAdapter = require("@socket.io/redis-adapter").createAdapter;
-const redis = require("redis");
+const mongoose = require("mongoose");
 require("dotenv").config();
-const { createClient } = redis;
+
+const formatMessage = require("./utils/messages");
 const {
   userJoin,
   getCurrentUser,
   userLeave,
   getRoomUsers,
 } = require("./utils/users");
+const { verifySocketToken } = require("./middleware/auth");
+const Room = require("./models/Room");
+const Message = require("./models/Message");
+
+// Routers
+const authRouter = require("./routes/auth");
+const roomsRouter = require("./routes/rooms");
 
 const app = express();
 const server = http.createServer(app);
-const io = socketio(server);
 
-// Set static folder
-app.use(express.static(path.join(__dirname, "public")));
-app.use(express.static(path.join(__dirname, "public")));
+// CORS configuration
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3003",
+  "http://localhost:5173",
+  "https://rhytmic-realm.vercel.app",
+  "https://rhytmic-realm-tgx5.vercel.app"
+];
+
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+if (process.env.MUSIC_PLAYER_URL) {
+  allowedOrigins.push(process.env.MUSIC_PLAYER_URL);
+}
+
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:3003", "https://rhytmic-realm.vercel.app", "https://rhytmic-realm-tgx5.vercel.app"],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, postman)
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Permissive in development
+  },
   credentials: true
 }));
-app.use(express.json()); // Enable JSON body parsing
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+
+// MongoDB Connection
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/rhytmic_realm";
+
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log(` Connected to MongoDB at ${MONGODB_URI}`))
+  .catch((err) => {
+    console.error(" MongoDB Connection Error:", err.message);
+    console.warn("⚠️ Warning: Running without persistent MongoDB. Ensure local mongod is running for persistence.");
+  });
+
+// Setup Socket.IO
+const io = socketio(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
+
+// Optional Redis Adapter Setup
+if (process.env.ENABLE_REDIS === "true" || process.env.REDIS_URL) {
+  try {
+    const { createAdapter } = require("@socket.io/redis-adapter");
+    const { createClient } = require("redis");
+    const redisUrl = process.env.REDIS_URL || "redis://127.0.0.1:6379";
+
+    const pubClient = createClient({ url: redisUrl });
+    const subClient = pubClient.duplicate();
+
+    Promise.all([pubClient.connect(), subClient.connect()])
+      .then(() => {
+        io.adapter(createAdapter(pubClient, subClient));
+        console.log(" Socket.IO Redis adapter enabled on", redisUrl);
+      })
+      .catch((err) => {
+        console.warn(" Redis connection failed, falling back to in-memory adapter:", err.message);
+      });
+  } catch (err) {
+    console.warn(" Redis setup skipped or failed:", err.message);
+  }
+} else {
+  console.log("ℹ️ Socket.IO running in single-instance in-memory mode.");
+}
 
 const botName = "RythmRealm Bot";
 
-// (async () => {
-//   pubClient = createClient({ url: "redis://127.0.0.1:6379" });
-//   await pubClient.connect();
-//   subClient = pubClient.duplicate();
-//   io.adapter(createAdapter(pubClient, subClient));
-// })();
-
-const users = []; // In-memory user store
-
-// Auth Routes
-app.post('/api/signup', (req, res) => {
-  const { username, email, password } = req.body;
-
-  // Check if user exists
-  if (users.find(u => u.email === email)) {
-    return res.status(400).json({ message: 'User already exists' });
-  }
-
-  const newUser = { id: Date.now(), username, email, password };
-  users.push(newUser);
-
-  res.status(201).json({ message: 'User created successfully', user: { username, email } });
-});
-
-app.post('/api/login', (req, res) => {
-  const { email, password } = req.body;
-
-  const user = users.find(u => u.email === email && u.password === password);
-
-  if (user) {
-    res.json({ message: 'Login successful', user: { username: user.username, email: user.email } });
-  } else {
-    res.status(401).json({ message: 'Invalid credentials' });
-  }
-});
-
-// Run when client connects
+// Built-in Music Catalog
 const musicData = [
   {
     songName: 'Chasing',
@@ -113,59 +145,237 @@ const musicData = [
   }
 ];
 
+// Mount REST API Routes
+app.use("/api/auth", authRouter);
+app.use("/api/rooms", roomsRouter);
+
+// Backward compatibility routes for legacy callers
+app.post("/api/signup", (req, res, next) => authRouter.handle(req, res, next));
+app.post("/api/login", (req, res, next) => authRouter.handle(req, res, next));
+
+// Songs API with room-based filtering
 app.get('/api/songs', (req, res) => {
   const { room } = req.query;
 
   if (room) {
+    const formattedRoom = room.toLowerCase().replace(/-/g, ' ');
     const filtered = musicData.filter(song => {
-      const roomName = room.toLowerCase().replace(/-/g, ' ');
-      const artistName = song.songArtist.toLowerCase();
-      return artistName.includes(roomName) || roomName.includes(artistName);
+      const artist = song.songArtist.toLowerCase();
+      const name = song.songName.toLowerCase();
+      return artist.includes(formattedRoom) || formattedRoom.includes(artist) || name.includes(formattedRoom);
     });
 
     if (filtered.length > 0) {
       return res.json(filtered);
     }
-    // Fallback: Use all music if no specific artist matches the room
   }
 
-  // Default/Fallback
+  // Fallback: return all music
   res.json(musicData);
 });
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    uptime: process.uptime()
+  });
+});
+
+// Authoritative room music state cache in memory for low-latency sync
+const roomMusicStates = new Map();
+
+// Rate-limiting map for sockets (prevents chat spam)
+const socketRateLimits = new Map();
+
+// Socket.IO Handshake Authentication Middleware
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token || socket.handshake.query?.token;
+    if (token) {
+      const user = await verifySocketToken(token);
+      if (user) {
+        socket.user = user;
+      }
+    }
+    next();
+  } catch (err) {
+    next(); // Proceed as guest
+  }
+});
+
+// Socket.IO Event Handlers
 io.on("connection", (socket) => {
-  socket.on("joinRoom", ({ username, room }) => {
-    const user = userJoin(socket.id, username, room);
+  // Join Room
+  socket.on("joinRoom", async ({ username, room }) => {
+    // Use authenticated username if available, else provided username
+    const verifiedUsername = (socket.user && socket.user.username) ? socket.user.username : (username || 'Guest');
+    const targetRoom = room || 'Lounge';
+
+    const user = userJoin(socket.id, verifiedUsername, targetRoom);
+    socket.username = verifiedUsername;
+    socket.room = targetRoom;
 
     socket.join(user.room);
 
     // Welcome current user
-    socket.emit("message", formatMessage(botName, "Welcome to RythmRealm!"));
+    socket.emit("message", formatMessage(botName, `Welcome to RhythmRealm room: ${user.room}!`));
+
+    // Send recent message history from MongoDB
+    try {
+      const history = await Message.find({ room: user.room })
+        .sort({ createdAt: -1 })
+        .limit(30);
+
+      const formattedHistory = history.reverse().map(m => ({
+        username: m.username,
+        text: m.text,
+        time: m.time || new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }));
+
+      socket.emit("messageHistory", formattedHistory);
+    } catch (err) {
+      console.warn("Could not load message history:", err.message);
+    }
 
     // Broadcast when a user connects
     socket.broadcast
       .to(user.room)
-      .emit(
-        "message",
-        formatMessage(botName, `${user.username} has joined the chat`)
-      );
+      .emit("message", formatMessage(botName, `${user.username} has joined the chat`));
 
-    // Send users and room info
+    // Send active users list
     io.to(user.room).emit("roomUsers", {
       room: user.room,
       users: getRoomUsers(user.room),
     });
+
+    // Send current authoritative room music state
+    let currentState = roomMusicStates.get(user.room);
+    if (!currentState) {
+      // Initialize room music state from matching song or default
+      const defaultSong = musicData[0];
+      currentState = {
+        songName: defaultSong.songName,
+        songArtist: defaultSong.songArtist,
+        songSrc: defaultSong.songSrc,
+        songAvatar: defaultSong.songAvatar,
+        isPlaying: false,
+        currentTime: 0,
+        lastUpdated: Date.now()
+      };
+      roomMusicStates.set(user.room, currentState);
+    }
+    socket.emit("music:stateUpdate", currentState);
   });
 
-  // Listen for chatMessage
-  socket.on("chatMessage", (msg) => {
+  // Chat message event
+  socket.on("chatMessage", async (msg) => {
     const user = getCurrentUser(socket.id);
+    if (!user || !user.room) return;
 
-    io.to(user.room).emit("message", formatMessage(user.username, msg));
+    // Rate-limiting check (max 5 messages per 2 seconds)
+    const now = Date.now();
+    const limitData = socketRateLimits.get(socket.id) || { count: 0, resetAt: now + 2000 };
+    if (now > limitData.resetAt) {
+      limitData.count = 0;
+      limitData.resetAt = now + 2000;
+    }
+    limitData.count++;
+    socketRateLimits.set(socket.id, limitData);
+
+    if (limitData.count > 5) {
+      socket.emit("message", formatMessage(botName, "⚠️ You are sending messages too quickly. Please slow down."));
+      return;
+    }
+
+    // Validation
+    const cleanText = (typeof msg === 'string' ? msg : '').trim();
+    if (!cleanText || cleanText.length > 1000) return;
+
+    const formatted = formatMessage(user.username, cleanText);
+
+    // Save message to MongoDB
+    try {
+      const newMsg = new Message({
+        room: user.room,
+        sender: socket.user ? socket.user._id : null,
+        username: user.username,
+        text: cleanText,
+        time: formatted.time
+      });
+      await newMsg.save();
+    } catch (err) {
+      console.warn("Failed to persist message to MongoDB:", err.message);
+    }
+
+    // Broadcast to room
+    io.to(user.room).emit("message", formatted);
   });
 
-  // Runs when client disconnects
+  // Shared Music Controls
+  socket.on("music:play", ({ currentTime }) => {
+    const user = getCurrentUser(socket.id);
+    if (!user || !user.room) return;
+
+    let state = roomMusicStates.get(user.room) || {};
+    state.isPlaying = true;
+    if (typeof currentTime === 'number') state.currentTime = currentTime;
+    state.lastUpdated = Date.now();
+    roomMusicStates.set(user.room, state);
+
+    io.to(user.room).emit("music:stateUpdate", state);
+  });
+
+  socket.on("music:pause", ({ currentTime }) => {
+    const user = getCurrentUser(socket.id);
+    if (!user || !user.room) return;
+
+    let state = roomMusicStates.get(user.room) || {};
+    state.isPlaying = false;
+    if (typeof currentTime === 'number') state.currentTime = currentTime;
+    state.lastUpdated = Date.now();
+    roomMusicStates.set(user.room, state);
+
+    io.to(user.room).emit("music:stateUpdate", state);
+  });
+
+  socket.on("music:seek", ({ currentTime }) => {
+    const user = getCurrentUser(socket.id);
+    if (!user || !user.room) return;
+
+    let state = roomMusicStates.get(user.room) || {};
+    if (typeof currentTime === 'number') state.currentTime = currentTime;
+    state.lastUpdated = Date.now();
+    roomMusicStates.set(user.room, state);
+
+    io.to(user.room).emit("music:stateUpdate", state);
+  });
+
+  socket.on("music:changeTrack", (trackData) => {
+    const user = getCurrentUser(socket.id);
+    if (!user || !user.room) return;
+
+    const state = {
+      songName: trackData.songName || 'Track',
+      songArtist: trackData.songArtist || 'Artist',
+      songSrc: trackData.songSrc,
+      songAvatar: trackData.songAvatar,
+      isPlaying: true,
+      currentTime: 0,
+      lastUpdated: Date.now()
+    };
+    roomMusicStates.set(user.room, state);
+
+    // Save current track to Room model asynchronously
+    Room.findOneAndUpdate({ code: user.room }, { currentMusicState: state }).exec().catch(() => {});
+
+    io.to(user.room).emit("music:stateUpdate", state);
+  });
+
+  // Disconnect event
   socket.on("disconnect", () => {
+    socketRateLimits.delete(socket.id);
     const user = userLeave(socket.id);
 
     if (user) {
@@ -185,4 +395,8 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 3009;
 
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+if (require.main === module) {
+  server.listen(PORT, () => console.log(`🚀 Rhythmic Realm Server running on port ${PORT}`));
+}
+
+module.exports = { app, server };

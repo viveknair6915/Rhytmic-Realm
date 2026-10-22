@@ -1,19 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './JoinPage.module.css';
-import { Link } from 'react-router-dom';
 
 const JoinPage = () => {
   const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.username) setUsername(parsed.username);
+        if (parsed.email) setEmail(parsed.email);
+      }
+    } catch (_) {}
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const username = e.target.username.value;
-    const email = e.target.email.value;
+    const enteredUsername = username.trim() || e.target.username.value;
     const room = e.target.room.value;
 
     // Redirect to the chat page with the provided username and room
-    navigate(`/chat?username=${username}&room=${room}`);
+    navigate(`/chat?username=${encodeURIComponent(enteredUsername)}&room=${encodeURIComponent(room)}`);
   };
 
   return (
@@ -30,6 +41,8 @@ const JoinPage = () => {
               name="username"
               id="username"
               placeholder="Naruto"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
@@ -40,6 +53,8 @@ const JoinPage = () => {
               name="email"
               id="email"
               placeholder="abc@gmail.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>

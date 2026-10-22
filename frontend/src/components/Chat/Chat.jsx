@@ -4,15 +4,13 @@ import io from 'socket.io-client';
 import styles from './Chat.module.css';
 import { FaPaperPlane, FaComments, FaUsers, FaSignOutAlt } from 'react-icons/fa';
 
-// For local development, assume backend is local. 
-// In production, this should be an env variable.
 const ENDPOINT = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3009';
 
 const Chat = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [socket, setSocket] = useState(null);
-    const [ready, setReady] = useState(false); // To ensure socket is connected before render interactions if needed
+    const [ready, setReady] = useState(false);
 
     // State
     const [room, setRoom] = useState('');
@@ -21,50 +19,109 @@ const Chat = () => {
     const [inputMsg, setInputMsg] = useState('');
     const [currentUser, setCurrentUser] = useState('');
 
-    // Refs for scrolling
+    // Refs
     const messagesEndRef = useRef(null);
+    const iframeRef = useRef(null);
+    const socketRef = useRef(null);
 
     useEffect(() => {
         // Parse query params
         const searchParams = new URLSearchParams(location.search);
-        const usernameParam = searchParams.get('username');
+        let usernameParam = searchParams.get('username');
         const roomParam = searchParams.get('room');
 
-        if (!usernameParam || !roomParam) {
-            navigate('/musicparty'); // Redirect back if missing params
+        if (!roomParam) {
+            navigate('/musicparty');
             return;
         }
 
-        setCurrentUser(usernameParam);
+        // Try getting verified username from localStorage if missing or generic
+        if (!usernameParam) {
+            try {
+                const stored = localStorage.getItem('user');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (parsed.username) usernameParam = parsed.username;
+                }
+            } catch (_) {}
+        }
+
+        const finalUsername = usernameParam || 'Guest';
+        setCurrentUser(finalUsername);
         setRoom(roomParam);
 
-        // Connect Socket
+        const token = localStorage.getItem('token');
+
+        // Connect Socket with Auth Token
         const newSocket = io(ENDPOINT, {
-            transports: ['websocket'] // Force websocket for better consistency
+            auth: { token },
+            query: { token },
+            transports: ['websocket', 'polling']
         });
+
+        socketRef.current = newSocket;
         setSocket(newSocket);
 
         // Join Room
-        newSocket.emit('joinRoom', { username: usernameParam, room: roomParam });
+        newSocket.emit('joinRoom', { username: finalUsername, room: roomParam });
 
-        // Listeners
-        newSocket.on('roomUsers', ({ room, users }) => {
-            setUsers(users);
+        // Listen for message history from MongoDB
+        newSocket.on('messageHistory', (history) => {
+            if (Array.isArray(history) && history.length > 0) {
+                setMessages(history);
+            }
         });
 
+        // Listen for new messages
         newSocket.on('message', (message) => {
             setMessages((prev) => [...prev, message]);
         });
 
+        // Listen for room users update
+        newSocket.on('roomUsers', ({ users }) => {
+            setUsers(users);
+        });
+
+        // Listen for synchronized music state updates
+        newSocket.on('music:stateUpdate', (musicState) => {
+            if (iframeRef.current && iframeRef.current.contentWindow) {
+                iframeRef.current.contentWindow.postMessage({
+                    type: 'SYNC_MUSIC_STATE',
+                    ...musicState
+                }, '*');
+            }
+        });
+
         setReady(true);
+
+        // Listen for events sent from the music player iframe
+        const handleIframeMessage = (event) => {
+            if (!event.data || event.data.type !== 'MUSIC_PLAYER_ACTION') return;
+            const { action, ...payload } = event.data;
+
+            if (newSocket && newSocket.connected) {
+                if (action === 'play') {
+                    newSocket.emit('music:play', payload);
+                } else if (action === 'pause') {
+                    newSocket.emit('music:pause', payload);
+                } else if (action === 'seek') {
+                    newSocket.emit('music:seek', payload);
+                } else if (action === 'changeTrack') {
+                    newSocket.emit('music:changeTrack', payload);
+                }
+            }
+        };
+
+        window.addEventListener('message', handleIframeMessage);
 
         // Cleanup
         return () => {
+            window.removeEventListener('message', handleIframeMessage);
             newSocket.disconnect();
         };
     }, [location.search, navigate]);
 
-    // Auto-scroll to bottom
+    // Auto-scroll to bottom of chat
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
@@ -79,15 +136,16 @@ const Chat = () => {
 
     const handleLeave = () => {
         if (window.confirm('Are you sure you want to leave the chatroom?')) {
-            navigate('/');
+            if (socket) socket.disconnect();
+            navigate('/musicparty');
         }
     };
 
-    // Construct Music Player URL (Local/Production agnostic)
+    // Construct Music Player URL
     const MUSIC_PLAYER_BASE_URL = process.env.REACT_APP_MUSIC_PLAYER_URL || 'http://localhost:3000';
     const musicPlayerUrl = `${MUSIC_PLAYER_BASE_URL}/?room=${encodeURIComponent(room)}`;
 
-    if (!ready) return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Connecting...</div>;
+    if (!ready) return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Connecting to Realm...</div>;
 
     return (
         <div className={styles.chatContainer}>
@@ -127,9 +185,11 @@ const Chat = () => {
 
                 <div className={styles.musicPlayerContainer}>
                     <iframe
+                        ref={iframeRef}
                         src={musicPlayerUrl}
                         className={styles.musicPlayerFrame}
                         title="Music Player"
+                        allow="autoplay"
                     />
                 </div>
             </main>

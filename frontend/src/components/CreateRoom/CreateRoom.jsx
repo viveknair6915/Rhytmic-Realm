@@ -1,25 +1,55 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './CreateRoom.module.css';
 import { v4 as uuidv4 } from 'uuid';
 
-const JoinPage = () => {
+const CreateRoom = () => {
+    const navigate = useNavigate();
     const [room, setRoom] = useState('');
-    
+    const [username, setUsername] = useState('');
+
+    useEffect(() => {
+        // Pre-fill username if user is logged in
+        try {
+            const stored = localStorage.getItem('user');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed.username) setUsername(parsed.username);
+            }
+        } catch (_) {}
+    }, []);
+
     const generateUniqueRoomName = () => {
-        // Generate a unique room name using uuid
-        return uuidv4();
+        return uuidv4().slice(0, 8); // Clean, unique room code
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const username = e.target.username.value;
+        const enteredUsername = username.trim() || e.target.username.value;
+        const selectedRoom = room.trim() !== '' ? room.trim() : generateUniqueRoomName();
 
-        // If the user entered a custom room, use it; otherwise, generate a unique room name
-        const selectedRoom = room.trim() !== '' ? room : generateUniqueRoomName();
+        // Register room with backend (optional failure tolerant)
+        const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3009';
+        const token = localStorage.getItem('token');
+        try {
+            await fetch(`${BACKEND_URL}/api/rooms`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify({
+                    name: selectedRoom,
+                    code: selectedRoom,
+                    isPrivate: true
+                })
+            });
+        } catch (_) {
+            // Proceed to chat even if room auto-register succeeds via socket
+        }
 
-        // Redirect to the chat page with the provided username and room
-        window.location.href = `http://localhost:3009/chat.html?username=${username}&room=${selectedRoom}`;
+        // Navigate within React Router
+        navigate(`/chat?username=${encodeURIComponent(enteredUsername)}&room=${encodeURIComponent(selectedRoom)}`);
     };
 
     return (
@@ -36,6 +66,8 @@ const JoinPage = () => {
                             name="username"
                             id="username"
                             placeholder="Naruto"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             required
                         />
                     </div>
@@ -61,4 +93,4 @@ const JoinPage = () => {
     );
 };
 
-export default JoinPage;
+export default CreateRoom;
